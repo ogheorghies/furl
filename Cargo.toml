@@ -1,0 +1,18 @@
+[package]
+name = "furl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+url = "2.3.1"
+clap = { version = "3.2.22", features = ["derive"] }
+
+[dev-dependencies]
+test_bin = "0.4.0"
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
