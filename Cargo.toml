@@ -2,6 +2,15 @@
 name = "furl"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+keywords = ["URL", "URI", "formatting"]
+categories = ["command-line-utilities", "development-tools"]
+readme = "README.md"
+repository = "https://github.com/furl"
+homepage = "https://github.com/furl"
+
+[badges]
+maintenance = { status = "..." }
 
 [dependencies]
 url = "2.3.1"
