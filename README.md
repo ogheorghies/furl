@@ -21,15 +21,15 @@ postgres localhost 5432 db usr pwd
 
 The formatting string can contain any of the following substitutions:
 ```text
-%A - the path, without the starting '/'{n}
-%a - the path{n}
-%f - the fragment{n}
-%h - the hostname{n}
-%P - the password of the userinfo portion{n}
-%p - the port{n}
-%q - the query string{n}
-%s - the scheme{n}
-%U - the username of the userinfo portion{n}
+%A - the path, without the starting '/'
+%a - the path
+%f - the fragment
+%h - the hostname
+%P - the password of the userinfo portion
+%p - the port
+%q - the query string
+%s - the scheme
+%U - the username of the userinfo portion
 %n - newline (\n)
 %t - tab (\t)
 %% - a single %
