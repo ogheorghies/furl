@@ -75,7 +75,7 @@ dependencies = [
 
 [[package]]
 name = "furl"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "clap",
  "test_bin",

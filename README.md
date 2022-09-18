@@ -1,4 +1,4 @@
-Command line formatter for URLs, written in Rust, based on [url](https://docs.rs/url)
+Command line formatter for URLs, based on [url](https://docs.rs/url)
 and [clap](https://docs.rs/clap).
 
 Install with: `cargo install furl`
@@ -11,12 +11,12 @@ $ furl -u "postgres://usr:pwd@localhost:5432/db" \
 host='localhost' port='5432' db='db' user='usr' pwd='pwd'
 
 $ furl -u "https://www.google.com/search?q=rust+furl" \
-       -f "scheme='%s' query='%q' path='%a'"
-scheme='https' query='q=rust+furl' path='/search'
+       -f "scheme='%s' query='%q' path='%a' port='%p'"
+scheme='https' query='q=rust+furl' path='/search' port=''
 
 $ furl -u "https://en.wikipedia.org/wiki/Rust#Prevention" \
-       -f "port='%p' fragment='%f'"
-port='' fragment='Prevention'
+       -f "path='%a' fragment='%f'"
+path='/wiki/Rust' fragment='Prevention'
 
 $ furl -u "postgres://usr:pwd@localhost:5432/db"
 postgres localhost 5432 db usr pwd  
