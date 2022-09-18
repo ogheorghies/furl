@@ -36,9 +36,11 @@ The formatting string can contain any of the following substitutions:
 
 # Bash example
 
-```
+```bash
 echo 'DATABASE_URL="postgres://webapp:pwd@localhost:5432/myapp"' >> .env
 
-DPG="docker run -d --rm --name pg-%A -v vol-%A:/var/lib/postgresql -p %p:5432 -e POSTGRES_DB=%A -e POSTGRES_USER=%U -e POSTGRES_PASSWORD=%P postgres"
+DPG="docker run -d --rm --name pg-%A -v vol-%A:/var/lib/postgresql -p %p:5432
+    -e POSTGRES_DB=%A -e POSTGRES_USER=%U -e POSTGRES_PASSWORD=%P postgres"
+
 $(source .env && furl -u $DATABASE_URL -f "$DPG")
 ```
