@@ -8,6 +8,7 @@ categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"
 repository = "https://github.com/furl"
 homepage = "https://github.com/furl"
+description = "Formatter for URLs using a sprintf-like template"
 
 [badges]
 maintenance = { status = "..." }
