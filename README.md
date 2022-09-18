@@ -1,4 +1,5 @@
-Command line formatter for URLs, written in Rust.
+Command line formatter for URLs, written in Rust, based on [url](https://docs.rs/url)
+and [clap](https://docs.rs/clap).
 
 Install with: `cargo install furl`
 
