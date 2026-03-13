@@ -1,4 +1,5 @@
 use clap::Parser;
+use std::fmt;
 use url::Url;
 
 #[derive(Parser, Debug)]
@@ -44,9 +45,16 @@ struct Args {
     url: String,
 }
 
-#[derive(Debug)]
 enum AppErr {
     UrlParseError(url::ParseError),
+}
+
+impl fmt::Debug for AppErr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AppErr::UrlParseError(err) => write!(f, "invalid URL: {err}"),
+        }
+    }
 }
 
 impl From<url::ParseError> for AppErr {
