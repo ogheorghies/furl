@@ -7,18 +7,12 @@ struct Res {
     status: i32,
 }
 
-impl Res {
-    pub fn new(out: &str, err: &str, status: i32) -> Self {
-        Res {
-            out: out.to_string(),
-            err: err.to_string(),
-            status,
-        }
-    }
-}
-
 fn success(out: &str) -> Res {
-    Res::new(out, "", 0)
+    Res {
+        out: out.to_string(),
+        err: String::new(),
+        status: 0,
+    }
 }
 
 fn run(args: &[&str]) -> Res {
@@ -76,6 +70,18 @@ fn postgres_url() {
     assert_eq!(
         run(&["-u", "postgres://usr@localhost:5432/db", "-f", "host='%h' port='%p' db='%A' user='%U' pwd='%P'"]),
         success("host='localhost' port='5432' db='db' user='usr' pwd=''\n")
+    );
+}
+
+#[test]
+fn username() {
+    assert_eq!(
+        run(&["-u", "http://alice@example.com/", "-f", "%U"]),
+        success("alice\n")
+    );
+    assert_eq!(
+        run(&["-u", "http://example.com/", "-f", "%U"]),
+        success("\n")
     );
 }
 
