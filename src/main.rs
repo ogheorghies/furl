@@ -1,48 +1,40 @@
-use clap::Parser;
+use argh::FromArgs;
 use std::fmt;
 use url::Url;
 
-#[derive(Parser, Debug)]
-#[clap(author, version, about)]
-/// Formatter for URLs using a sprintf-like template.
-///
-/// $ furl -u "postgres://usr:pwd@localhost:5432/db" -f "host='%h' port='%p' db='%A' user='%U' pwd='%P'"
-///
-/// host='localhost' port='5432' db='db' user='usr' pwd='pwd'
-///
-/// $ furl -u "https://www.google.com/search?q=rust+furl" -f "scheme='%s' query='%q' path='%a'"
-///
-/// scheme='https' query='q=rust+furl' path='/search'
-///
-/// $ furl -u "https://en.wikipedia.org/wiki/Rust#Prevention" -f "port='%p' fragment='%f'"
-///
-/// port='' fragment='Prevention'
-///
-/// $ furl -u "postgres://usr:pwd@localhost:5432/db"
-///
-/// postgres localhost 5432 db usr pwd  
-///
-/// For the last example, the default format is used (see below).
+#[derive(FromArgs)]
+#[argh(
+    description = "Formatter for URLs using a sprintf-like template.\n\n\
+    Format specifiers:\n\
+    \x20 %A - the path, without the starting '/'\n\
+    \x20 %a - the path\n\
+    \x20 %f - the fragment\n\
+    \x20 %h - the hostname\n\
+    \x20 %P - the password of the userinfo portion\n\
+    \x20 %p - the port\n\
+    \x20 %q - the query string\n\
+    \x20 %s - the scheme\n\
+    \x20 %U - the username of the userinfo portion\n\
+    \x20 %n - newline (\\n)\n\
+    \x20 %t - tab (\\t)\n\
+    \x20 %% - a single %",
+    example = "\
+    {command_name} -u \"postgres://usr:pwd@localhost:5432/db\" \\\n\
+    \x20      -f \"host='%h' port='%p' db='%A' user='%U' pwd='%P'\"\n\
+    host='localhost' port='5432' db='db' user='usr' pwd='pwd'\n\n\
+    {command_name} -u \"https://www.google.com/search?q=rust+furl\" \\\n\
+    \x20      -f \"scheme='%s' query='%q' path='%a'\"\n\
+    scheme='https' query='q=rust+furl' path='/search'\n\n\
+    {command_name} -u \"postgres://usr:pwd@localhost:5432/db\"\n\
+    postgres localhost 5432 db usr pwd"
+)]
 struct Args {
-    /// The format to use.{n}
-    ///    %A - the path, without the starting '/'{n}
-    ///    %a - the path{n}
-    ///    %f - the fragment{n}
-    ///    %h - the hostname{n}
-    ///    %P - the password of the userinfo portion{n}
-    ///    %p - the port{n}
-    ///    %q - the query string{n}
-    ///    %s - the scheme{n}
-    ///    %U - the username of the userinfo portion{n}
-    ///    %n - newline (\n);
-    ///    %t - tab (\t);
-    ///    %% - a single %
-    ///    {n}
-    #[clap(short, long, value_parser, default_value = "%s %h %p %A %U %P %q %f")]
+    /// the format to use [default: "%s %h %p %A %U %P %q %f"]
+    #[argh(option, short = 'f', default = "String::from(\"%s %h %p %A %U %P %q %f\")")]
     format: String,
 
-    /// The URL to parse and format
-    #[clap(short, long, value_parser)]
+    /// the URL to parse and format
+    #[argh(option, short = 'u')]
     url: String,
 }
 
@@ -65,7 +57,7 @@ impl From<url::ParseError> for AppErr {
 }
 
 fn main() -> Result<(), AppErr> {
-    let args = Args::parse();
+    let args: Args = argh::from_env();
     let url = Url::parse(args.url.as_str())?;
 
     let mut ret = "".to_string();

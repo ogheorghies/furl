@@ -1,6 +1,6 @@
 [package]
 name = "furl"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 keywords = ["URL", "URI", "formatting"]
@@ -14,8 +14,8 @@ description = "Formatter for URLs using a sprintf-like template"
 maintenance = { status = "..." }
 
 [dependencies]
-url = "2.3.1"
-clap = { version = "3.2.22", features = ["derive"] }
+url = "2.5.8"
+argh = "0.1"
 
 [profile.release]
 strip = true

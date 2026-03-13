@@ -37,14 +37,11 @@ fn run(args: &[&str]) -> Res {
 }
 
 #[test]
-fn short_help_is_brief() {
-    assert!(run(&["-h"]).out.contains("furl "));
-    assert!(!run(&["-h"]).out.contains("postgres"));
-}
-
-#[test]
-fn long_help_has_examples() {
-    assert!(run(&["--help"]).out.contains("postgres"));
+fn help() {
+    let res = run(&["--help"]);
+    assert!(res.out.contains("furl"));
+    assert!(res.out.contains("postgres"));
+    assert!(res.out.contains("Format specifiers"));
 }
 
 #[test]
@@ -109,9 +106,7 @@ fn default_format() {
 #[test]
 fn handles_wrong_args() {
     let res = run(&["asdda"]);
-    assert!(res
-        .err
-        .contains("error: Found argument 'asdda' which wasn't expected"));
+    assert!(res.err.contains("Unrecognized argument: asdda"));
 
     assert!(res.status != 0);
 }
