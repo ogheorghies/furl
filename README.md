@@ -1,4 +1,4 @@
-Command line formatter for URLs, based on [url](https://docs.rs/url).
+Text (printf) and JSON formatter for URLs.
 
 Install with: `cargo install furl`
 

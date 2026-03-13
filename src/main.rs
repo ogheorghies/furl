@@ -7,7 +7,7 @@ use url::Url;
 
 #[derive(FromArgs)]
 #[argh(
-    description = r#"Formatter for URLs - JSON or formatted output.
+    description = r#"Text (printf) and JSON formatter for URLs.
 
 Format specifiers (-f):
  %A - the path, without the starting '/'

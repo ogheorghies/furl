@@ -1,14 +1,14 @@
 [package]
 name = "furl"
-version = "0.2.0"
-edition = "2021"
+version = "0.2.1"
+edition = "2024"
 license = "MIT"
-keywords = ["URL", "URI", "formatting"]
+keywords = ["URL", "URI", "formatting", "JSON", "printf"]
 categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"
 repository = "https://github.com/ogheorghies/furl"
 homepage = "https://github.com/ogheorghies/furl"
-description = "Formatter for URLs using a sprintf-like template"
+description = "Text (printf) and JSON formatter for URLs"
 
 [badges]
 maintenance = { status = "..." }
