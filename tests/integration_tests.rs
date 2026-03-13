@@ -22,11 +22,11 @@ fn success(out: &str) -> Res {
 }
 
 fn run(args: &str) -> Res {
-    let cmd = test_bin::get_test_bin("furl");
+    let cmd = env!("CARGO_BIN_EXE_furl");
 
     let output = Command::new("sh")
         .arg("-c")
-        .arg(format!("{} {}", cmd.get_program().to_str().unwrap(), args))
+        .arg(format!("{} {}", cmd, args))
         .output()
         .expect("failed to execute process");
 
