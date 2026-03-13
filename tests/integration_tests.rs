@@ -118,6 +118,38 @@ fn unknown_specifier() {
 }
 
 #[test]
+fn json_full() {
+    assert_eq!(
+        run(&["-u", "postgres://usr:pwd@localhost:5432/db", "-j"]),
+        success("{\"scheme\":\"postgres\",\"user\":\"usr\",\"password\":\"pwd\",\"host\":\"localhost\",\"port\":5432,\"path\":\"/db\"}\n")
+    );
+}
+
+#[test]
+fn json_with_query() {
+    assert_eq!(
+        run(&["-u", "https://www.google.com/search?q=rust+furl&lang=en", "-j"]),
+        success("{\"scheme\":\"https\",\"host\":\"www.google.com\",\"path\":\"/search\",\"query\":{\"q\":\"rust+furl\",\"lang\":\"en\"}}\n")
+    );
+}
+
+#[test]
+fn json_minimal() {
+    assert_eq!(
+        run(&["-u", "http://example.com/", "-j"]),
+        success("{\"scheme\":\"http\",\"host\":\"example.com\"}\n")
+    );
+}
+
+#[test]
+fn json_with_fragment() {
+    assert_eq!(
+        run(&["-u", "http://example.com/page#section", "-j"]),
+        success("{\"scheme\":\"http\",\"host\":\"example.com\",\"path\":\"/page\",\"fragment\":\"section\"}\n")
+    );
+}
+
+#[test]
 fn default_format() {
     assert_eq!(
         run(&["-u", "postgres://usr:pwd@localhost:5432/db"]),

@@ -5,6 +5,12 @@ Install with: `cargo install furl`
 Examples:
 
 ```bash
+$ furl -u "https://www.example.com/" -j -p
+{"scheme":"https","host":"www.example.com","port":443}
+
+$ furl -u "https://usr:pwd@www.example.com/at?a=A&b=B#foo" -j
+{"scheme":"https","user":"usr","password":"pwd","host":"www.example.com","path":"/at","query":{"a":"A","b":"B"},"fragment":"foo"}
+
 $ furl -u "postgres://usr:pwd@localhost:5432/db" \
        -f "host='%h' port='%p' db='%A' user='%U' pwd='%P'"
 host='localhost' port='5432' db='db' user='usr' pwd='pwd'
@@ -21,7 +27,40 @@ $ furl -u "postgres://usr:pwd@localhost:5432/db"
 postgres localhost 5432 db usr pwd  
 ```
 
-The formatting string can contain any of the following substitutions:
+# JSON output
+
+Use `-j` to output URL components as JSON. Only detected components are included.
+Query parameters are expanded into a nested object.
+
+```bash
+$ furl -u "https://usr:pwd@www.example.com/at?a=A&b=B#foo" -j | jq
+{
+  "scheme": "https",
+  "user": "usr",
+  "password": "pwd",
+  "host": "www.example.com",
+  "path": "/at",
+  "query": {
+    "a": "A",
+    "b": "B"
+  },
+  "fragment": "foo"
+}
+```
+
+Default ports (80 for http, 443 for https) are omitted unless `-p` is used:
+
+```bash
+$ furl -u "https://www.example.com:443/" -j
+{"scheme":"https","host":"www.example.com"}
+
+$ furl -u "https://www.example.com/" -j -p
+{"scheme":"https","host":"www.example.com","port":443}
+```
+
+# Format string
+
+The formatting string (`-f`) can contain any of the following substitutions:
 ```text
 %A - the path, without the starting '/'
 %a - the path

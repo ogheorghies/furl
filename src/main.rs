@@ -1,39 +1,54 @@
+mod format;
+mod json;
+
 use argh::FromArgs;
 use std::fmt;
 use url::Url;
 
 #[derive(FromArgs)]
 #[argh(
-    description = "Formatter for URLs using a sprintf-like template.\n\n\
-    Format specifiers:\n\
-    \x20 %A - the path, without the starting '/'\n\
-    \x20 %a - the path\n\
-    \x20 %f - the fragment\n\
-    \x20 %h - the hostname\n\
-    \x20 %P - the password of the userinfo portion\n\
-    \x20 %p - the port\n\
-    \x20 %q - the query string\n\
-    \x20 %s - the scheme\n\
-    \x20 %U - the username of the userinfo portion\n\
-    \x20 %n - newline (\\n)\n\
-    \x20 %t - tab (\\t)\n\
-    \x20 %% - a single %\n\
-    \n\
-    Unknown specifiers are printed as such.",
-    example = "\
-    {command_name} -u \"postgres://usr:pwd@localhost:5432/db\" \\\n\
-    \x20      -f \"host='%h' port='%p' db='%A' user='%U' pwd='%P'\"\n\
-    host='localhost' port='5432' db='db' user='usr' pwd='pwd'\n\n\
-    {command_name} -u \"https://www.google.com/search?q=rust+furl\" \\\n\
-    \x20      -f \"scheme='%s' query='%q' path='%a'\"\n\
-    scheme='https' query='q=rust+furl' path='/search'\n\n\
-    {command_name} -u \"postgres://usr:pwd@localhost:5432/db\"\n\
-    postgres localhost 5432 db usr pwd"
+    description = r#"Formatter for URLs - JSON or formatted output.
+
+Format specifiers (-f):
+ %A - the path, without the starting '/'
+ %a - the path
+ %f - the fragment
+ %h - the hostname
+ %P - the password of the userinfo portion
+ %p - the port
+ %q - the query string
+ %s - the scheme
+ %U - the username of the userinfo portion
+ %n - newline (\n)
+ %t - tab (\t)
+ %% - a single %
+
+Unknown specifiers are printed as such."#,
+    example = r#"% {command_name} -u 'postgres://usr:pwd@localhost:5432/db' \
+       -f "host='%h' port='%p' db='%A' user='%U' pwd='%P'"
+host='localhost' port='5432' db='db' user='usr' pwd='pwd'
+
+% {command_name} -u 'postgres://usr:pwd@localhost:5432/db'
+postgres localhost 5432 db usr pwd
+
+% {command_name} -u 'https://www.example.com/' -j -p
+{{"scheme":"https","host":"www.example.com","port":443}}
+
+% {command_name} -u 'https://usr:pwd@www.example.com/at?a=A&b=B#foo' -j
+{{"scheme":"https","user":"usr","password":"pwd","host":"www.example.com","path":"/at","query":{{"a":"A","b":"B"}},"fragment":"foo"}}"#
 )]
 struct Args {
     /// the format to use [default: "%s %h %p %A %U %P %q %f"]
-    #[argh(option, short = 'f', default = "String::from(\"%s %h %p %A %U %P %q %f\")")]
-    format: String,
+    #[argh(option, short = 'f')]
+    format: Option<String>,
+
+    /// output as JSON
+    #[argh(switch, short = 'j')]
+    json: bool,
+
+    /// include default port in JSON output (e.g. 80 for http)
+    #[argh(switch, short = 'p')]
+    default_port: bool,
 
     /// the URL to parse and format
     #[argh(option, short = 'u')]
@@ -62,38 +77,11 @@ fn main() -> Result<(), AppErr> {
     let args: Args = argh::from_env();
     let url = Url::parse(args.url.as_str())?;
 
-    let mut ret = String::new();
-    let mut prev_percent = false;
-    for c in args.format.chars() {
-        if prev_percent {
-            prev_percent = false;
-            match c {
-                'a' => ret.push_str(url.path()),
-                'A' => ret.push_str(url.path().strip_prefix('/').unwrap_or(url.path())),
-                'f' => ret.push_str(url.fragment().unwrap_or("")),
-                'h' => ret.push_str(url.host_str().unwrap_or("")),
-                'P' => ret.push_str(url.password().unwrap_or("")),
-                'p' => ret.push_str(&url.port().map(|v| v.to_string()).unwrap_or_default()),
-                'q' => ret.push_str(url.query().unwrap_or("")),
-                's' => ret.push_str(url.scheme()),
-                'U' => ret.push_str(url.username()),
-                'n' => ret.push('\n'),
-                't' => ret.push('\t'),
-                '%' => ret.push('%'),
-                _ => {
-                    ret.push('%');
-                    ret.push(c);
-                }
-            };
-        } else if c == '%' {
-            prev_percent = true;
-        } else {
-            ret.push(c);
-        }
+    if args.json {
+        println!("{}", json::json_url(&url, args.default_port));
+    } else {
+        let fmt = args.format.as_deref().unwrap_or("%s %h %p %A %U %P %q %f");
+        println!("{}", format::format_url(fmt, &url));
     }
-    if prev_percent {
-        ret.push('%');
-    }
-    println!("{}", ret);
     Ok(())
 }
