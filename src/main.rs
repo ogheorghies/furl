@@ -34,9 +34,10 @@ struct Args {
     ///    %q - the query string{n}
     ///    %s - the scheme{n}
     ///    %U - the username of the userinfo portion{n}
-    ///    %n - newline (\t)
-    ///    %t - tab (\n)
+    ///    %n - newline (\n);
+    ///    %t - tab (\t);
     ///    %% - a single %
+    ///    {n}
     #[clap(short, long, value_parser, default_value = "%s %h %p %A %U %P %q %f")]
     format: String,
 

@@ -21,12 +21,11 @@ fn success(out: &str) -> Res {
     Res::new(out, "", 0)
 }
 
-fn run(args: &str) -> Res {
-    let cmd = env!("CARGO_BIN_EXE_furl");
+fn run(args: &[&str]) -> Res {
+    let bin = env!("CARGO_BIN_EXE_furl");
 
-    let output = Command::new("sh")
-        .arg("-c")
-        .arg(format!("{} {}", cmd, args))
+    let output = Command::new(bin)
+        .args(args)
         .output()
         .expect("failed to execute process");
 
@@ -39,40 +38,34 @@ fn run(args: &str) -> Res {
 
 #[test]
 fn works_well() {
-    assert!(run("-h").out.contains("furl "));
-    assert!(!run("-h").out.contains("postgres"));
-    assert!(run("--help").out.contains("postgres"));
-    assert_eq!(run("-u http://example.com/ -f '%a'"), success("/\n"));
-    assert_eq!(run("-u http://example.com/ -f '%A'"), success("\n"));
-    assert_eq!(run("-u http://example.com/ -f '%p'"), success("\n"));
+    assert!(run(&["-h"]).out.contains("furl "));
+    assert!(!run(&["-h"]).out.contains("postgres"));
+    assert!(run(&["--help"]).out.contains("postgres"));
+    assert_eq!(run(&["-u", "http://example.com/", "-f", "%a"]), success("/\n"));
+    assert_eq!(run(&["-u", "http://example.com/", "-f", "%A"]), success("\n"));
+    assert_eq!(run(&["-u", "http://example.com/", "-f", "%p"]), success("\n"));
     assert_eq!(
-        run("-u http://example.com:8080/ -f '%p'"),
+        run(&["-u", "http://example.com:8080/", "-f", "%p"]),
         success("8080\n")
     );
     assert_eq!(
-        run("-u http://example.com:8080/a#b -f '%s %h %p %a %f'"),
+        run(&["-u", "http://example.com:8080/a#b", "-f", "%s %h %p %a %f"]),
         success("http example.com 8080 /a b\n")
     );
     assert_eq!(
-        run(
-            r#"-u "postgres://usr:pwd@localhost:5432/db" -f "host='%h' port='%p' db='%A' user='%U' pwd='%P'""#
-        ),
+        run(&["-u", "postgres://usr:pwd@localhost:5432/db", "-f", "host='%h' port='%p' db='%A' user='%U' pwd='%P'"]),
         success("host='localhost' port='5432' db='db' user='usr' pwd='pwd'\n")
     );
     assert_eq!(
-        run(
-            r#"-u "postgres://usr@localhost:5432/db" -f "host='%h' port='%p' db='%A' user='%U' pwd='%P'""#
-        ),
+        run(&["-u", "postgres://usr@localhost:5432/db", "-f", "host='%h' port='%p' db='%A' user='%U' pwd='%P'"]),
         success("host='localhost' port='5432' db='db' user='usr' pwd=''\n")
     );
     assert_eq!(
-        run(
-            r#"-u "https://www.google.com/search?q=rust+furl" -f "scheme='%s' query='%q' path='%a'""#
-        ),
+        run(&["-u", "https://www.google.com/search?q=rust+furl", "-f", "scheme='%s' query='%q' path='%a'"]),
         success("scheme='https' query='q=rust+furl' path='/search'\n")
     );
     assert_eq!(
-        run("-u http://example.com/ -f '%a%t%%%n[%p]'"),
+        run(&["-u", "http://example.com/", "-f", "%a%t%%%n[%p]"]),
         success("/\t%\n[]\n")
     );
 }
@@ -80,14 +73,14 @@ fn works_well() {
 #[test]
 fn works_with_default_format() {
     assert_eq!(
-        run(r#"-u "postgres://usr:pwd@localhost:5432/db""#),
+        run(&["-u", "postgres://usr:pwd@localhost:5432/db"]),
         success("postgres localhost 5432 db usr pwd  \n")
     );
 }
 
 #[test]
 fn handles_wrong_args() {
-    let res = run(r#"asdda"#);
+    let res = run(&["asdda"]);
     assert!(res
         .err
         .contains("error: Found argument 'asdda' which wasn't expected"));
@@ -97,8 +90,8 @@ fn handles_wrong_args() {
 
 #[test]
 fn handles_wrong_url() {
-    let res = run(r#"-u hrt/asd/asd/"#);
-    assert!(res.err.contains("UrlParseError"));
+    let res = run(&["-u", "hrt/asd/asd/"]);
+    assert!(res.err.contains("invalid URL"));
 
     assert!(res.status != 0);
 }
