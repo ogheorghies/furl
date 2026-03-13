@@ -1,5 +1,4 @@
-Command line formatter for URLs, based on [url](https://docs.rs/url)
-and [clap](https://docs.rs/clap).
+Command line formatter for URLs, based on [url](https://docs.rs/url).
 
 Install with: `cargo install furl`
 
