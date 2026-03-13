@@ -60,45 +60,29 @@ fn main() -> Result<(), AppErr> {
     let args: Args = argh::from_env();
     let url = Url::parse(args.url.as_str())?;
 
-    let mut ret = "".to_string();
+    let mut ret = String::new();
     let mut prev_percent = false;
     for c in args.format.chars() {
-        match prev_percent {
-            true => {
-                prev_percent = false;
-                match c {
-                    'a' => ret.push_str(url.path()),
-                    'A' => ret.push_str({
-                        let path = url.path();
-                        match path.starts_with('/') {
-                            true => &path[1..],
-                            false => path,
-                        }
-                    }),
-                    'f' => ret.push_str(url.fragment().unwrap_or("")),
-                    'h' => ret.push_str(url.host_str().unwrap_or("")),
-                    'P' => ret.push_str(url.password().unwrap_or("")),
-                    'p' => ret.push_str(
-                        {
-                            match url.port().unwrap_or(0) {
-                                0 => String::from(""),
-                                v => v.to_string(),
-                            }
-                        }
-                        .as_str(),
-                    ),
-                    'q' => ret.push_str(url.query().unwrap_or("")),
-                    's' => ret.push_str(url.scheme()),
-                    'U' => ret.push_str(url.username()),
-                    'n' => ret.push_str("\n"),
-                    't' => ret.push_str("\t"),
-                    _ => ret.push(c),
-                };
-            }
-            false => match c {
-                '%' => prev_percent = true,
+        if prev_percent {
+            prev_percent = false;
+            match c {
+                'a' => ret.push_str(url.path()),
+                'A' => ret.push_str(url.path().strip_prefix('/').unwrap_or(url.path())),
+                'f' => ret.push_str(url.fragment().unwrap_or("")),
+                'h' => ret.push_str(url.host_str().unwrap_or("")),
+                'P' => ret.push_str(url.password().unwrap_or("")),
+                'p' => ret.push_str(&url.port().map(|v| v.to_string()).unwrap_or_default()),
+                'q' => ret.push_str(url.query().unwrap_or("")),
+                's' => ret.push_str(url.scheme()),
+                'U' => ret.push_str(url.username()),
+                'n' => ret.push('\n'),
+                't' => ret.push('\t'),
                 _ => ret.push(c),
-            },
+            };
+        } else if c == '%' {
+            prev_percent = true;
+        } else {
+            ret.push(c);
         }
     }
     println!("{}", ret);
