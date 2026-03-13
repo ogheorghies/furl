@@ -17,7 +17,9 @@ use url::Url;
     \x20 %U - the username of the userinfo portion\n\
     \x20 %n - newline (\\n)\n\
     \x20 %t - tab (\\t)\n\
-    \x20 %% - a single %",
+    \x20 %% - a single %\n\
+    \n\
+    Unknown specifiers are printed as such.",
     example = "\
     {command_name} -u \"postgres://usr:pwd@localhost:5432/db\" \\\n\
     \x20      -f \"host='%h' port='%p' db='%A' user='%U' pwd='%P'\"\n\
@@ -77,13 +79,20 @@ fn main() -> Result<(), AppErr> {
                 'U' => ret.push_str(url.username()),
                 'n' => ret.push('\n'),
                 't' => ret.push('\t'),
-                _ => ret.push(c),
+                '%' => ret.push('%'),
+                _ => {
+                    ret.push('%');
+                    ret.push(c);
+                }
             };
         } else if c == '%' {
             prev_percent = true;
         } else {
             ret.push(c);
         }
+    }
+    if prev_percent {
+        ret.push('%');
     }
     println!("{}", ret);
     Ok(())

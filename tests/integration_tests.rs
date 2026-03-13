@@ -102,6 +102,22 @@ fn escape_sequences() {
 }
 
 #[test]
+fn trailing_percent() {
+    assert_eq!(
+        run(&["-u", "http://example.com/", "-f", "hello%"]),
+        success("hello%\n")
+    );
+}
+
+#[test]
+fn unknown_specifier() {
+    assert_eq!(
+        run(&["-u", "http://example.com/", "-f", "%z"]),
+        success("%z\n")
+    );
+}
+
+#[test]
 fn default_format() {
     assert_eq!(
         run(&["-u", "postgres://usr:pwd@localhost:5432/db"]),
