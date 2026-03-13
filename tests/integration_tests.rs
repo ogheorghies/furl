@@ -37,21 +37,41 @@ fn run(args: &[&str]) -> Res {
 }
 
 #[test]
-fn works_well() {
+fn short_help_is_brief() {
     assert!(run(&["-h"]).out.contains("furl "));
     assert!(!run(&["-h"]).out.contains("postgres"));
+}
+
+#[test]
+fn long_help_has_examples() {
     assert!(run(&["--help"]).out.contains("postgres"));
+}
+
+#[test]
+fn path() {
     assert_eq!(run(&["-u", "http://example.com/", "-f", "%a"]), success("/\n"));
     assert_eq!(run(&["-u", "http://example.com/", "-f", "%A"]), success("\n"));
+}
+
+#[test]
+fn port() {
     assert_eq!(run(&["-u", "http://example.com/", "-f", "%p"]), success("\n"));
     assert_eq!(
         run(&["-u", "http://example.com:8080/", "-f", "%p"]),
         success("8080\n")
     );
+}
+
+#[test]
+fn multiple_fields() {
     assert_eq!(
         run(&["-u", "http://example.com:8080/a#b", "-f", "%s %h %p %a %f"]),
         success("http example.com 8080 /a b\n")
     );
+}
+
+#[test]
+fn postgres_url() {
     assert_eq!(
         run(&["-u", "postgres://usr:pwd@localhost:5432/db", "-f", "host='%h' port='%p' db='%A' user='%U' pwd='%P'"]),
         success("host='localhost' port='5432' db='db' user='usr' pwd='pwd'\n")
@@ -60,10 +80,18 @@ fn works_well() {
         run(&["-u", "postgres://usr@localhost:5432/db", "-f", "host='%h' port='%p' db='%A' user='%U' pwd='%P'"]),
         success("host='localhost' port='5432' db='db' user='usr' pwd=''\n")
     );
+}
+
+#[test]
+fn query() {
     assert_eq!(
         run(&["-u", "https://www.google.com/search?q=rust+furl", "-f", "scheme='%s' query='%q' path='%a'"]),
         success("scheme='https' query='q=rust+furl' path='/search'\n")
     );
+}
+
+#[test]
+fn escape_sequences() {
     assert_eq!(
         run(&["-u", "http://example.com/", "-f", "%a%t%%%n[%p]"]),
         success("/\t%\n[]\n")
@@ -71,7 +99,7 @@ fn works_well() {
 }
 
 #[test]
-fn works_with_default_format() {
+fn default_format() {
     assert_eq!(
         run(&["-u", "postgres://usr:pwd@localhost:5432/db"]),
         success("postgres localhost 5432 db usr pwd  \n")
