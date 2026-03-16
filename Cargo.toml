@@ -1,6 +1,6 @@
 [package]
 name = "furl"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
 license = "MIT"
 keywords = ["URL", "URI", "formatting", "JSON", "printf"]
@@ -9,6 +9,14 @@ readme = "README.md"
 repository = "https://github.com/ogheorghies/furl"
 homepage = "https://github.com/ogheorghies/furl"
 description = "Text (printf) and JSON formatter for URLs"
+
+[[bin]]
+name = "furl"
+path = "src/main.rs"
+
+[lib]
+name = "furl"
+path = "src/lib.rs"
 
 [badges]
 maintenance = { status = "..." }

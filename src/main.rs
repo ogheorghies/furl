@@ -1,5 +1,5 @@
-mod format;
-mod json;
+use furl::format;
+use furl::json;
 
 use argh::FromArgs;
 use std::fmt;
@@ -78,7 +78,7 @@ fn main() -> Result<(), AppErr> {
     let url = Url::parse(args.url.as_str())?;
 
     if args.json {
-        println!("{}", json::json_url(&url, args.default_port));
+        println!("{}", json::UrlParts::from_url(&url, args.default_port));
     } else {
         let fmt = args.format.as_deref().unwrap_or("%s %h %p %A %U %P %q %f");
         println!("{}", format::format_url(fmt, &url));
