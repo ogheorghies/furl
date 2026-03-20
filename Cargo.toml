@@ -1,6 +1,6 @@
 [package]
 name = "furl"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2024"
 license = "MIT"
 keywords = ["URL", "URI", "formatting", "JSON", "printf"]
@@ -24,6 +24,7 @@ maintenance = { status = "..." }
 [dependencies]
 url = "2.5.8"
 argh = "0.1"
+percent-encoding = "2.3"
 
 [profile.release]
 strip = true

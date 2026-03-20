@@ -1,23 +1,32 @@
 use std::fmt;
+use percent_encoding::percent_decode_str;
 use url::Url;
 
-pub struct UrlParts<'a> {
-    pub scheme: &'a str,
-    pub user: Option<&'a str>,
-    pub password: Option<&'a str>,
-    pub host: Option<&'a str>,
+pub struct UrlParts {
+    pub scheme: String,
+    pub user: Option<String>,
+    pub password: Option<String>,
+    pub host: Option<String>,
     pub port: Option<u16>,
-    pub path: Option<&'a str>,
-    pub query: Option<Vec<(&'a str, &'a str)>>,
-    pub fragment: Option<&'a str>,
+    pub path: Option<String>,
+    pub query: Option<Vec<(String, String)>>,
+    pub fragment: Option<String>,
 }
 
-impl<'a> UrlParts<'a> {
-    pub fn from_url(url: &'a Url, default_port: bool) -> Self {
+fn maybe_decode(s: &str, decode: bool) -> String {
+    if decode {
+        percent_decode_str(s).decode_utf8_lossy().into_owned()
+    } else {
+        s.to_string()
+    }
+}
+
+impl UrlParts {
+    pub fn from_url(url: &Url, default_port: bool, decode: bool) -> Self {
         let user = if url.username().is_empty() {
             None
         } else {
-            Some(url.username())
+            Some(maybe_decode(url.username(), decode))
         };
 
         let port = if default_port {
@@ -28,32 +37,32 @@ impl<'a> UrlParts<'a> {
 
         let path = match url.path() {
             "/" | "" => None,
-            p => Some(p),
+            p => Some(maybe_decode(p, decode)),
         };
 
         let query = url.query().map(|q| {
             q.split('&')
                 .map(|part| {
-                    part.split_once('=').unwrap_or((part, ""))
+                    let (k, v) = part.split_once('=').unwrap_or((part, ""));
+                    (maybe_decode(k, decode), maybe_decode(v, decode))
                 })
                 .collect()
         });
 
         UrlParts {
-            scheme: url.scheme(),
+            scheme: url.scheme().to_string(),
             user,
-            password: url.password(),
-            host: url.host_str(),
+            password: url.password().map(|p| maybe_decode(p, decode)),
+            host: url.host_str().map(|h| h.to_string()),
             port,
             path,
             query,
-            fragment: url.fragment(),
+            fragment: url.fragment().map(|f| maybe_decode(f, decode)),
         }
     }
-
 }
 
-impl fmt::Display for UrlParts<'_> {
+impl fmt::Display for UrlParts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut sep = false;
 
@@ -69,24 +78,24 @@ impl fmt::Display for UrlParts<'_> {
 
         comma!(f);
         write!(f, "\"scheme\":\"")?;
-        write_escaped(f, self.scheme)?;
+        write_escaped(f, &self.scheme)?;
         write!(f, "\"")?;
 
-        if let Some(user) = self.user {
+        if let Some(user) = &self.user {
             comma!(f);
             write!(f, "\"user\":\"")?;
             write_escaped(f, user)?;
             write!(f, "\"")?;
         }
 
-        if let Some(password) = self.password {
+        if let Some(password) = &self.password {
             comma!(f);
             write!(f, "\"password\":\"")?;
             write_escaped(f, password)?;
             write!(f, "\"")?;
         }
 
-        if let Some(host) = self.host {
+        if let Some(host) = &self.host {
             comma!(f);
             write!(f, "\"host\":\"")?;
             write_escaped(f, host)?;
@@ -98,7 +107,7 @@ impl fmt::Display for UrlParts<'_> {
             write!(f, "\"port\":{port}")?;
         }
 
-        if let Some(path) = self.path {
+        if let Some(path) = &self.path {
             comma!(f);
             write!(f, "\"path\":\"")?;
             write_escaped(f, path)?;
@@ -121,7 +130,7 @@ impl fmt::Display for UrlParts<'_> {
             write!(f, "}}")?;
         }
 
-        if let Some(fragment) = self.fragment {
+        if let Some(fragment) = &self.fragment {
             comma!(f);
             write!(f, "\"fragment\":\"")?;
             write_escaped(f, fragment)?;

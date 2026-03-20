@@ -159,10 +159,32 @@ fn default_format() {
 
 #[test]
 fn handles_wrong_args() {
-    let res = run(&["asdda"]);
-    assert!(res.err.contains("Unrecognized argument: asdda"));
-
+    let res = run(&["--bogus"]);
+    assert!(res.err.contains("Unrecognized argument: --bogus"));
     assert!(res.status != 0);
+}
+
+#[test]
+fn missing_url() {
+    let res = run(&["-j"]);
+    assert!(res.err.contains("missing URL"));
+    assert!(res.status != 0);
+}
+
+#[test]
+fn positional_url() {
+    assert_eq!(
+        run(&["http://example.com/", "-f", "%h"]),
+        success("example.com\n")
+    );
+}
+
+#[test]
+fn positional_url_json() {
+    assert_eq!(
+        run(&["-j", "http://example.com/"]),
+        success("{\"scheme\":\"http\",\"host\":\"example.com\"}\n")
+    );
 }
 
 #[test]
@@ -171,4 +193,60 @@ fn handles_wrong_url() {
     assert!(res.err.contains("invalid URL"));
 
     assert!(res.status != 0);
+}
+
+#[test]
+fn decode_path() {
+    assert_eq!(
+        run(&["-u", "https://example.com/caf%C3%A9/m%C3%BCsli", "-f", "%a"]),
+        success("/café/müsli\n")
+    );
+}
+
+#[test]
+fn decode_path_encoded_flag() {
+    assert_eq!(
+        run(&["-u", "https://example.com/caf%C3%A9", "-f", "%a", "-e"]),
+        success("/caf%C3%A9\n")
+    );
+}
+
+#[test]
+fn decode_query() {
+    assert_eq!(
+        run(&["-u", "https://example.com/?q=hello%20world", "-f", "%q"]),
+        success("q=hello world\n")
+    );
+}
+
+#[test]
+fn decode_fragment() {
+    assert_eq!(
+        run(&["-u", "https://example.com/#caf%C3%A9", "-f", "%f"]),
+        success("café\n")
+    );
+}
+
+#[test]
+fn decode_user_password() {
+    assert_eq!(
+        run(&["-u", "https://us%40er:p%40ss@example.com/", "-f", "%U %P"]),
+        success("us@er p@ss\n")
+    );
+}
+
+#[test]
+fn decode_json() {
+    assert_eq!(
+        run(&["-u", "https://example.com/caf%C3%A9?q=hello%20world#s%C3%A9c", "-j"]),
+        success("{\"scheme\":\"https\",\"host\":\"example.com\",\"path\":\"/café\",\"query\":{\"q\":\"hello world\"},\"fragment\":\"séc\"}\n")
+    );
+}
+
+#[test]
+fn decode_json_encoded_flag() {
+    assert_eq!(
+        run(&["-u", "https://example.com/caf%C3%A9", "-j", "-e"]),
+        success("{\"scheme\":\"https\",\"host\":\"example.com\",\"path\":\"/caf%C3%A9\"}\n")
+    );
 }
